@@ -25,7 +25,7 @@ TODO
 ### Download and Compile
 
 ```console
-git clone https://github.com/drnatebrown/r-index-f.git
+git clone https://github.com/drnatebrown/r-permute.git
 cd r-index-f
 
 mkdir build && cd build
@@ -34,15 +34,8 @@ make
 ```
 
 ### Build
-Builds the data structure on the example fasta file given, creating [filename].rif as output. The -f flag specifies we read in a fasta format. Other build flags affect the BWT build and are described in [Big-BWT](https://github.com/alshai/Big-BWT.git).
 ```console
-python3 rif ../data/example_fasta/example.fasta -f
-```
-
-### Use
-The data structure should be imported and loaded as decribed in r-index-f.hpp once built, and supports LF computation needed to perform count queries.
-```console
-[test query scripts in progress]
+TODO
 ```
 
 # External Dependencies
