@@ -52,7 +52,7 @@ TODO
 ### Implementation:
 
 * [Nathaniel Brown](https://github.com/drnatebrown)
-* [Baorui Jia](https://github.com/maxrossi91)
+* Baorui Jia
 
 ### Theory
 * Nathaniel Brown
