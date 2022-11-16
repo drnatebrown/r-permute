@@ -13,7 +13,7 @@
 ```
 -->
 
-**Stores permutation $\pi$ in $O(r)$-space lookup table where $r$ is the number of "runs" which are permuted consecutively (# of positions where $i=0$ or $\pi[i-1] \neq \pi[i] -1]$ ). Lookup is supported in $O(d)=O(1)$-time in the worst case where $d$ is a parameter controlling how often table entries are "split" to prevent worst case (without splitting, worst case $\Omega(r)$-time, but faster in practice) [1].**
+**Stores permutation $\pi$ in $O(r)$-space lookup table where $r$ is the number of "runs" which are permuted consecutively (# of positions where $i=0$ or $\pi[i-1] \neq \pi[i] -1]$ ). When the run of a position is known (i.e., when applying successive permutations), each permutation is supported in $O(d)=O(1)$-time in the worst case where $d$ is a parameter controlling how often table entries are "split" to prevent worst case (without splitting, worst case $\Omega(r)$-time, but faster in practice) [1].**
 
 ---
 
