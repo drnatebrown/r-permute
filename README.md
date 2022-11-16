@@ -56,8 +56,7 @@ TODO
 
 ### Theory
 * Nathaniel Brown
-* Baorui Jia
-* Massimiliano Rossi
+* [Massimiliano Rossi](https://github.com/maxrossi91)
 * Travis Gagie
 
 # References
