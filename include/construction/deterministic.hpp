@@ -22,10 +22,11 @@
 #define _DETERMINISTIC_CONST_HH
 
 #include <common.hpp>
+#include <math.h>
 
 #include <../ds/FL_table.hpp>
 #include <../ds/static_column.hpp>
-#include <../ds/indexMaxPQ.hpp>
+#include <../ds/index_pq.hpp>
 
 #include <sdsl/structure_tree.hpp>
 #include <sdsl/util.hpp>
@@ -42,69 +43,87 @@ template < class static_bv_t = bit_vector,
 class deterministic : public constructor<static_bv_t>
 {
 private:
-    dynamic_bv_t P_prime;
-    dynamic_bv_t Q_prime;
+    dynamic_bv_t init_P_prime;
+    dynamic_bv_t init_Q_prime;
+    index_pq init_weights;
 
-public:
-    deterministic() : constructor<static_bv_t>() {}
-
-    deterministic(std::ifstream &heads, std::ifstream &lengths) : constructor<static_bv_t>(heads, lengths) {}
-
-    // Copy from constructor
-    deterministic(const constructor<static_bv_t>& c) : constructor<static_bv_t>(c) {}
-
-    static_bv_t build(ulint d = 2)
+    void initialize() 
     {
-        P_prime = dynamic_bv_t();
-        Q_prime = dynamic_bv_t();
+        ulint table_bound = ceil(this->table.runs()*1.5); // at worst, we add r/2 rows
 
-        indexMaxPQ weights = indexMaxPQ();
-        weights.init(this->P->size()*(1+1.0/(d-1))+1);
+        init_P_prime = dynamic_bv_t();
+        init_Q_prime = dynamic_bv_t();
+        init_weights = index_pq(table_bound, this->table.size()); // at worst, we had r/2 rows
 
         ulint total_weight = 0;
-        ulint run_weight = 0;
+        ulint run_weight = 1;
         ulint last_run_head = 0;
+
+        init_P_prime.push_back(this->P[0]);
+        init_Q_prime.push_back(this->Q[0]);
+        
         // Initialize the priority queue of weights (number of set bits a run in Q covers in P)
         // Start at 1 because we know that Q begins with a set bit
-        for (size_t i = 1; i < this->P->size(); ++i)
+        for (size_t i = 1; i < this->P.size(); ++i)
         {
-            P_prime.push_back((*this->P)[i]);
-            Q_prime.push_back((*this->Q)[i]);
+            init_P_prime.push_back(this->P[i]);
+            init_Q_prime.push_back(this->Q[i]);
 
             // 1 denotes start of run, so push the results of prior run
-            if((*this->Q)[i])
+            if(this->Q[i])
             {
-                weights.push(last_run_head, run_weight);
+                init_weights.push(last_run_head, run_weight);
                 total_weight += run_weight;
 
                 run_weight = 0;
                 last_run_head =  i;
+                //last_run++;
             }
-            if ((*this->P)[i])
+            if (this->P[i])
             {
                 ++run_weight;
             }
         }
-        weights.push(last_run_head, run_weight);
+        init_weights.push(last_run_head, run_weight);
+        total_weight += run_weight;
+        //init_weights.push(last_run, run_weight);
+    }
 
-        auto[max_weight, max_index] = weights.get_max();
+public:
+    deterministic() : constructor<static_bv_t>() {}
 
-        verbose("Runs before splitting: ", this->table.runs());
-        verbose("Max scan before: ", max_weight);
+    deterministic(std::ifstream &heads, std::ifstream &lengths) : constructor<static_bv_t>(heads, lengths) 
+    {
+        initialize();
+    }
+
+    // Copy from constructor
+    deterministic(constructor<static_bv_t>& c) : constructor<static_bv_t>(c) 
+    {
+        initialize();
+    }
+
+    static_bv_t build(ulint d = 2)
+    {
+        dynamic_bv_t P_prime = dynamic_bv_t(init_P_prime);
+        dynamic_bv_t Q_prime = dynamic_bv_t(init_Q_prime);
+        index_pq weights = index_pq(init_weights);
+        //weights.extend(this->table.runs()*(1+ceil(1.0/(d-1))));
 
         ulint count = 0;
+        auto[max_weight, max_index] = init_weights.get_max();
 
         while (max_weight >= 2*d)
         {
             count++;
             // Find where to set bit (split run)
-            ulint first_P_run = P_prime.rank(max_index) + 1; // Find first run in Q interval over P
+            ulint first_P_run = P_prime.rank(max_index); // Find first run in P which is covered by Q interval
             ulint Q_insert_position = P_prime.select(first_P_run + d); // Get the position of run bit d positions from first run
             
             // Set bits
-            Q_prime[Q_insert_position] = 1;
+            Q_prime[Q_insert_position] = true;
             ulint P_insert_position = this->find(Q_insert_position); // Find that corresponding bit in P
-            P_prime[P_insert_position] = 1;
+            P_prime[P_insert_position] = true;
 
             // Update PQ for split run in Q
             weights.demote(max_index, d); // Weight d run of original
@@ -112,8 +131,8 @@ public:
 
             // Update PQ for added bit in P
             ulint Q_pred_run = Q_prime.rank(P_insert_position + 1) - 1; // Get run
-            ulint Q_pred_idx = Q_prime.select(Q_pred_run + 1); // Get index of set bit
-            weights.promote(Q_pred_idx, weights.get_key(Q_pred_idx) + 1); // Increment the weight of that run by 1
+            ulint Q_pred_idx = Q_prime.select(Q_pred_run); // Get index of set bit
+            weights.promote(Q_pred_idx, weights.get_weight(Q_pred_idx) + 1); // Increment the weight of that run by 1
 
             // Take next run of maximum weight
             std::pair<ulint, ulint> max_pair = weights.get_max();
@@ -125,6 +144,25 @@ public:
         verbose("Runs after splitting: ", this->table.runs()+count);
         verbose("Max scan after: ", max_weight);
 
+        /* DEBUG CHECK */
+        // ulint max_w = 0;
+        // ulint run_weight = 0;
+        // ulint last_run_head = 0;
+        // for (size_t i = 1; i < P_prime.size(); ++i)
+        // {
+        //     // 1 denotes start of run, so push the results of prior run
+        //     if(Q_prime[i])
+        //     {
+        //         run_weight = 0;
+        //     }
+        //     if (P_prime[i])
+        //     {
+        //         ++run_weight;
+        //     }
+        //     if (run_weight > max_w) max_w = run_weight;
+        // }
+        //verbose("REAL MAX WEIGHT: ", max_w);
+
         static_bv_t ret = static_bv_t(P_prime.size());
         for (size_t i = 0; i < P_prime.size(); ++i)
         {
@@ -132,6 +170,49 @@ public:
         }
 
         return ret;
+    }
+
+    void stats() {
+        constructor<static_bv_t>::stats();
+
+        sdsl::nullstream ns;
+
+        verbose("              P_prime:     ", init_P_prime.serialize(ns));
+        verbose("              Q_prime:     ", init_Q_prime.serialize(ns));
+        verbose("              Weight-Heap: ", init_weights.serialize(ns));
+        verbose("");
+
+        auto[max_weight, max_index] = init_weights.get_max();
+
+        verbose("Runs before splitting: ", this->table.runs());
+        verbose("Max scan before: ", max_weight);
+    }
+
+    std::string get_file_extension() const
+    {
+        return ".d_construct";
+    }
+
+    size_t serialize(std::ostream &out, sdsl::structure_tree_node *v = nullptr, std::string name ="")
+    {
+        sdsl::structure_tree_node *child = sdsl::structure_tree::add_child(v, name, sdsl::util::class_name(*this));
+
+        size_t written_bytes = constructor<static_bv_t>::serialize(out, v, name);
+
+        written_bytes += init_P_prime.serialize(out);
+        written_bytes += init_Q_prime.serialize(out);
+        written_bytes += init_weights.serialize(out, v, "init_weights");
+
+        return written_bytes;
+    }
+
+    void load(std::istream &in)
+    {
+        constructor<static_bv_t>::load(in);
+
+        init_P_prime.load(in);
+        init_Q_prime.load(in);
+        init_weights.load(in);
     }
 };
 
