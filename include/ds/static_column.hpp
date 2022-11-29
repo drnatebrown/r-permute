@@ -45,6 +45,13 @@ private:
 public:
     static_column() {}
 
+    static_column(static_column &other)
+    {
+        col = other.col;
+        rank = rank_t(&col);
+        select = select_t(&col);
+    }
+
     static_column(bit_vector bv)
     {
         col = bv_t(bv);
@@ -105,7 +112,6 @@ public:
     */
     void load(std::istream &in)
     {
-        col = bv_t();
         col.load(in);
         rank = rank_t(&col);
         select = select_t(&col);
