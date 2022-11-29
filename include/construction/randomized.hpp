@@ -65,15 +65,15 @@ public:
 
     randomized(std::ifstream &heads, std::ifstream &lengths) : constructor<bv_t>(heads, lengths) {}
 
-    randomized(const constructor<bv_t>& c) : constructor<bv_t>(c) {}
+    randomized(constructor<bv_t>& c) : constructor<bv_t>(c) {}
     
     bv_t build(int ratio = 5) {
         double p = 1.0 / ratio;
         std::mt19937 gen(SEED);
         std::discrete_distribution<> choose({1-p, p});
 
-        P_prime = bv_t((*this->P).get_bv());
-        Q_prime = bv_t((*this->Q).get_bv());
+        P_prime = bv_t(this->P.get_bv());
+        Q_prime = bv_t(this->Q.get_bv());
 
         verbose("Runs before splitting: ", this->table.runs());
         verbose("Max scan before: ", get_max_scan());
@@ -81,8 +81,8 @@ public:
 
         //first run
         //check the 1-bit
-        for(size_t i = 0; i < this->P->size(); ++i) {
-            if((*this->P)[i]) {
+        for(size_t i = 0; i < this->P.size(); ++i) {
+            if(this->P[i]) {
                 if(choose(gen))
                     insert(i);
             }

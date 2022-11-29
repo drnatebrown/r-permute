@@ -42,44 +42,43 @@ int main(int argc, char *const argv[])
   Args args;
   parseArgs(argc, argv, args);
 
-  verbose("Building the Abstract Constructor (Representing L and F as bitvectors, supporting FL mapping)");
+  ulint d = args.d;
+
+  verbose("Loading Deterministic Constructor");
   std::chrono::high_resolution_clock::time_point t_insert_start = std::chrono::high_resolution_clock::now();
 
-  std::string bwt_fname = args.filename + ".bwt";
+  deterministic<bv_t> deter;
+  std::string deter_fname = args.filename + deter.get_file_extension();
+  
+  ifstream deter_in(deter_fname);
+  deter.load(deter_in);
+  deter_in.close();
 
-  std::string bwt_heads_fname = bwt_fname + ".heads";
-  std::ifstream ifs_heads(bwt_heads_fname);
-  std::string bwt_len_fname = bwt_fname + ".len";
-  std::ifstream ifs_len(bwt_len_fname);
-
-  ifs_heads.seekg(0);
-  ifs_len.seekg(0);
-  constructor<bv_t> construct(ifs_heads, ifs_len);
-
-  std::chrono::high_resolution_clock::time_point t_insert_end = std::chrono::high_resolution_clock::now();
-
-  verbose("Construction Complete");
-  verbose("Memory peak: ", malloc_count_peak());
-  verbose("Elapsed time (s): ", std::chrono::duration<double, std::ratio<1>>(t_insert_end - t_insert_start).count());
-
-  verbose("Building Deterministic Constructor");
   std::chrono::high_resolution_clock::time_point t_insert_mid = std::chrono::high_resolution_clock::now();
 
-  deterministic<bv_t> deter = deterministic(construct);
+  verbose("Load Complete");
+  verbose("Memory peak: ", malloc_count_peak());
+  verbose("Elapsed time (s): ", std::chrono::duration<double, std::ratio<1>>(t_insert_mid - t_insert_start).count());
 
-  t_insert_end = std::chrono::high_resolution_clock::now();
-  verbose("Construction Complete");
+  //deter.stats();
+
+  verbose("Building Deterministic Splitting, with bound d =", d);
+  t_insert_mid = std::chrono::high_resolution_clock::now();
+
+  bv_t final_col = deter.build(d);
+
+  std::chrono::high_resolution_clock::time_point t_insert_end = std::chrono::high_resolution_clock::now();
+  verbose("Splitting Complete");
   verbose("Memory peak: ", malloc_count_peak());
   verbose("Elapsed time (s): ", std::chrono::duration<double, std::ratio<1>>(t_insert_end - t_insert_mid).count());
 
-  deter.stats();
-
   verbose("Serializing");
+
   t_insert_mid = std::chrono::high_resolution_clock::now();
 
-  std::string determ_out = args.filename + deter.get_file_extension();
-  std::ofstream out_d(determ_out);
-  deter.serialize(out_d);
+  std::string outfile_deter = args.filename + ".d_col";
+  std::ofstream out_d(outfile_deter);
+  final_col.serialize(out_d);
   out_d.close();
 
   t_insert_end = std::chrono::high_resolution_clock::now();

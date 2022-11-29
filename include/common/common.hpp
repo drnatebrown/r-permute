@@ -122,11 +122,8 @@ void _internal_messageError( const std::string file, const unsigned int line,
 struct Args
 {
   std::string filename = "";
-  bool store = false; // store the data structure in the file
-  bool memo  = false; // print the memory usage
-  bool rle   = false; // outpt RLBWT
-  size_t th = 1; // number of threads
-  bool is_fasta = false; // read a fasta file
+  bool rle   = true; // read in RLBWT
+  int d = 2; // splitting param
 };
 
 void parseArgs(int argc, char *const argv[], Args &arg)
@@ -136,25 +133,16 @@ void parseArgs(int argc, char *const argv[], Args &arg)
   extern int optind;
 
   std::string sarg;
-  while ((c = getopt(argc, argv, "w:smcfl:rhp:t:")) != -1)
+  while ((c = getopt(argc, argv, "rd:")) != -1)
   {
     switch (c)
     {
-    case 's':
-      arg.store = true;
-      break;
-    case 'm':
-      arg.memo = true;
-      break;
     case 'r':
       arg.rle = true;
       break;
-    case 't':
+    case 'd':
       sarg.assign(optarg);
-      arg.th = stoi(sarg);
-      break;
-    case 'f':
-      arg.is_fasta = true;
+      arg.d = stoi(sarg);
       break;
     case '?':
       error("Unknown option.\n");
@@ -186,6 +174,13 @@ B bool_to_bit_vec(std::vector<bool> &b)
     bv[i] = b[i];
 
   return B(bv);
+}
+
+uint8_t bitsize(uint64_t x){
+
+	if(x==0) return 1;
+	return 64 - __builtin_clzll(x);
+
 }
 
 #endif /* end of include guard: _COMMON_HH */

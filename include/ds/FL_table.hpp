@@ -84,7 +84,7 @@ public:
         vector<vector<ulint>> L_block_indices = vector<vector<ulint>>(ALPHABET_SIZE);
         vector<vector<ulint>> char_runs = vector<vector<ulint>>(ALPHABET_SIZE); // Vector containing lengths for runs of certain character
         
-        ulint max_len = 0;
+        //ulint max_len = 0;
 
         char c;
         n = 0;
@@ -109,9 +109,9 @@ public:
             }
             n+=length;
 
-            if (length > max_len) max_len = length;
+            //if (length > max_len) max_len = length;
         }
-        cout << "MAX: " << max_len;
+        //cout << "MAX: " << max_len;
         r = L_chars.size();
 
         FL_runs = vector<FL_row>(r);

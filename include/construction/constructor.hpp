@@ -39,8 +39,8 @@ class constructor
 protected:
     FL_table table;
 
-    static_column<bv_t> *P; // L column with runheads set
-    static_column<bv_t> *Q; // F column with runheads set
+    static_column<bv_t> P; // L column with runheads set
+    static_column<bv_t> Q; // F column with runheads set
 
 public:
 
@@ -90,20 +90,20 @@ public:
             }
         }
 
-        P = new static_column<bv_t>(P_bits);
-        Q = new static_column<bv_t>(Q_bits);
+        P = static_column<bv_t>(P_bits);
+        Q = static_column<bv_t>(Q_bits);
     }
 
     // For a corresponding position in Q, find and return its position in P
     ulint find(ulint i) {
         // Finds the associated run and position in Q for positon i
-        auto[k, k_pos] = Q->predecessor(i);
+        auto[k, k_pos] = Q.predecessor(i);
         // Calculate the offset by subtracting the position of i from its run head position in Q
         ulint d = i - k_pos;
 
         // Find the corresponding run and offset in the L column
-        auto[k_prime, d_prime] = table.FL(k ,d);
-        ulint j = Q->get_idx(k_prime, d_prime); // Position is with respect to Q, so find its absolute position
+        auto[k_prime, d_prime] = table.FL(k, d);
+        ulint j = Q.get_idx(k_prime, d_prime); // Position is with respect to Q, so find its absolute position
 
         return j;
     }
@@ -114,9 +114,9 @@ public:
         sdsl::nullstream ns;
 
         verbose("Memory consumption (bytes).");
-        verbose("              FL table: ", table.serialize(ns));
-        verbose("              P: ", P->serialize(ns));
-        verbose("              Q: ", Q->serialize(ns));
+        verbose("              FL table:    ", table.serialize(ns));
+        verbose("              P:           ", P.serialize(ns));
+        verbose("              Q:           ", Q.serialize(ns));
     }
 
     std::string get_file_extension() const
@@ -145,7 +145,6 @@ public:
     */
     void load(std::istream &in)
     {
-        table = FL_table();
         table.load(in);
 
         P.load(in);
