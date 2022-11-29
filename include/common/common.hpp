@@ -42,6 +42,7 @@
 #include <sdsl/int_vector.hpp>
 
 #define ALPHABET_SIZE 256
+#define PRINT_STATS 1
 
 static const uint8_t TERMINATOR = 1;
 typedef unsigned long int ulint;

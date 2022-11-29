@@ -86,7 +86,13 @@ private:
         }
         init_weights.push(last_run_head, run_weight);
         total_weight += run_weight;
-        //init_weights.push(last_run, run_weight);
+
+        assert(total_weight == this->table.runs());
+
+        #ifdef PRINT_STATS
+        auto[max_weight, _] = init_weights.get_max();
+        cout << "Scan max: " << max_weight << std::endl;
+        #endif
     }
 
 public:
@@ -143,6 +149,11 @@ public:
         verbose("Added rows: ", count);
         verbose("Runs after splitting: ", this->table.runs()+count);
         verbose("Max scan after: ", max_weight);
+
+        #ifdef PRINT_STATS
+        cout << "Runs added: " << count << std::endl;
+        cout << "Scan after: " << max_weight << std::endl;
+        #endif
 
         /* DEBUG CHECK */
         // ulint max_w = 0;
