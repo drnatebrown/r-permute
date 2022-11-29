@@ -144,27 +144,23 @@ public:
         verbose("Runs after splitting: ", this->table.runs()+count);
         verbose("Max scan after: ", max_weight);
 
-        ulint max_w = 0;
-
-        ulint run_weight = 0;
-        ulint last_run_head = 0;
-        // Initialize the priority queue of weights (number of set bits a run in Q covers in P)
-        // Start at 1 because we know that Q begins with a set bit
-        for (size_t i = 1; i < P_prime.size(); ++i)
-        {
-            // 1 denotes start of run, so push the results of prior run
-            if(Q_prime[i])
-            {
-                run_weight = 0;
-            }
-            if (P_prime[i])
-            {
-                ++run_weight;
-            }
-
-            if (run_weight > max_w) max_w = run_weight;
-        }
-
+        /* DEBUG CHECK */
+        // ulint max_w = 0;
+        // ulint run_weight = 0;
+        // ulint last_run_head = 0;
+        // for (size_t i = 1; i < P_prime.size(); ++i)
+        // {
+        //     // 1 denotes start of run, so push the results of prior run
+        //     if(Q_prime[i])
+        //     {
+        //         run_weight = 0;
+        //     }
+        //     if (P_prime[i])
+        //     {
+        //         ++run_weight;
+        //     }
+        //     if (run_weight > max_w) max_w = run_weight;
+        // }
         //verbose("REAL MAX WEIGHT: ", max_w);
 
         static_bv_t ret = static_bv_t(P_prime.size());
