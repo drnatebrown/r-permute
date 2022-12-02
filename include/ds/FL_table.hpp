@@ -148,6 +148,11 @@ public:
                 ++k;
             }
         }
+
+        #ifdef PRINT_STATS
+        cout << "Text runs: " << runs() << std::endl;
+        cout << "Text length: " << size() << std::endl;
+        #endif
     }
 
     const FL_row get(size_t i)

@@ -71,6 +71,12 @@ int main(int argc, char *const argv[])
   verbose("Construction Complete");
   verbose("Memory peak: ", malloc_count_peak());
   verbose("Elapsed time (s): ", std::chrono::duration<double, std::ratio<1>>(t_insert_end - t_insert_mid).count());
+  
+  #ifdef PRINT_STATS
+  sdsl::nullstream ns;
+  cout << "Time build: " << std::chrono::duration<double, std::ratio<1>>(t_insert_end - t_insert_mid).count() << std::endl;
+  cout << "Disk build: " << deter.serialize(ns) << std::endl;
+  #endif
 
   deter.stats();
 
