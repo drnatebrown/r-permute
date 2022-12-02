@@ -196,7 +196,7 @@ public:
         auto[max_weight, max_index] = init_weights.get_max();
 
         verbose("Runs before splitting: ", this->table.runs());
-        verbose("Max scan before: ", max_weight);
+        verbose("Max scan before:       ", max_weight);
     }
 
     std::string get_file_extension() const
