@@ -31,6 +31,7 @@
 #include <sdsl/structure_tree.hpp>
 #include <sdsl/util.hpp>
 #include <sdsl/int_vector.hpp>
+#include <sdsl/sd_vector.hpp>
 
 #include <../../thirdparty/dynamic/dynamic.hpp>
 
@@ -38,8 +39,8 @@ using namespace std;
 using namespace sdsl;
 using namespace dyn;
 
-template < class static_bv_t = bit_vector,
-           class dynamic_bv_t = suc_bv >
+template < class static_bv_t = sd_vector<>,
+           class dynamic_bv_t = gap_bv >
 class deterministic : public constructor<static_bv_t>
 {
 private:
@@ -53,40 +54,38 @@ private:
 
         init_P_prime = dynamic_bv_t();
         init_Q_prime = dynamic_bv_t();
-        init_weights = index_pq(table_bound, this->table.size()); // at worst, we had r/2 rows
+        init_weights = index_pq(table_bound, this->table.size());
 
         ulint total_weight = 0;
-        ulint run_weight = 1;
         ulint last_run_head = 0;
 
-        init_P_prime.push_back(this->P[0]);
-        init_Q_prime.push_back(this->Q[0]);
+        init_P_prime.push_back(0);
+        init_Q_prime.push_back(0);
         
         // Initialize the priority queue of weights (number of set bits a run in Q covers in P)
         // Start at 1 because we know that Q begins with a set bit
-        for (size_t i = 1; i < this->P.size(); ++i)
+        for (size_t i = 1; i < this->table.runs(); ++i)
         {
-            init_P_prime.push_back(this->P[i]);
-            init_Q_prime.push_back(this->Q[i]);
-
-            // 1 denotes start of run, so push the results of prior run
-            if(this->Q[i])
+            ulint curr_P_idx = this->P.select(i+1);
+            for (size_t j = 0; j < (curr_P_idx - init_P_prime.size()); ++j) 
             {
-                init_weights.push(last_run_head, run_weight);
-                total_weight += run_weight;
+                init_P_prime.push_back(false);
+            }
+            init_P_prime.push_back(true);
 
-                run_weight = 0;
-                last_run_head =  i;
-                //last_run++;
-            }
-            if (this->P[i])
+            ulint curr_Q_idx = this->Q.select(i+1);
+            for (size_t j = 0; j < (curr_Q_idx - init_Q_prime.size()); ++j) 
             {
-                ++run_weight;
+                init_Q_prime.push_back(false);
             }
+            init_Q_prime.push_back(true);
+
+            ulint last_Q_weight = this->P.rank(curr_Q_idx) - total_weight;
+            init_weights.push(last_run_head, last_Q_weight);
+
+            total_weight += last_Q_weight;
+            last_run_head = curr_Q_idx;
         }
-        init_weights.push(last_run_head, run_weight);
-        total_weight += run_weight;
-
         assert(total_weight == this->table.runs());
 
         #ifdef PRINT_STATS
@@ -127,9 +126,9 @@ public:
             ulint Q_insert_position = P_prime.select(first_P_run + d); // Get the position of run bit d positions from first run
             
             // Set bits
-            Q_prime[Q_insert_position] = true;
+            Q_prime.set(Q_insert_position);
             ulint P_insert_position = this->find(Q_insert_position); // Find that corresponding bit in P
-            P_prime[P_insert_position] = true;
+            P_prime.set(P_insert_position);
 
             // Update PQ for split run in Q
             weights.demote(max_index, d); // Weight d run of original
@@ -174,13 +173,13 @@ public:
         // }
         //verbose("REAL MAX WEIGHT: ", max_w);
 
-        static_bv_t ret = static_bv_t(P_prime.size());
-        for (size_t i = 0; i < P_prime.size(); ++i)
+        sd_vector_builder P_prime_bits = sd_vector_builder(P_prime.size(), P_prime.rank1());
+        for (size_t i = 0; i < P_prime.rank1(); ++i)
         {
-            ret[i] = P_prime[i];
+            P_prime_bits.set(P_prime.select(i+1));
         }
 
-        return ret;
+        return static_bv_t(P_prime_bits);
     }
 
     void stats() {

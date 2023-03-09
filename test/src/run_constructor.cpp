@@ -35,7 +35,7 @@
 #include <sdsl/sd_vector.hpp>
 #include <malloc_count.h>
 
-typedef bit_vector bv_t;
+typedef sd_vector<> bv_t;
 
 int main(int argc, char *const argv[])
 {

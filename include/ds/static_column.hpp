@@ -23,7 +23,7 @@
 
 #include <common.hpp>
 
-#include <sdsl/int_vector.hpp>
+#include <sdsl/sd_vector.hpp>
 #include <sdsl/rmq_support.hpp>
 #include <sdsl/structure_tree.hpp>
 #include <sdsl/util.hpp>
@@ -31,7 +31,7 @@
 using namespace std;
 using namespace sdsl;
 
-template < class bv_t = bit_vector >
+template < class bv_t = sd_vector<> >
 class static_column
 {
 private:
@@ -39,8 +39,8 @@ private:
     typedef typename bv_t::select_1_type select_t;
 
     bv_t col;
-    rank_t rank;
-    select_t select;
+    rank_t rank1;
+    select_t select1;
 
 public:
     static_column() {}
@@ -48,15 +48,15 @@ public:
     static_column(static_column &other)
     {
         col = other.col;
-        rank = rank_t(&col);
-        select = select_t(&col);
+        rank1 = rank_t(&col);
+        select1 = select_t(&col);
     }
 
-    static_column(bit_vector bv)
+    static_column(bv_t bv)
     {
         col = bv_t(bv);
-        rank = rank_t(&col);
-        select = select_t(&col);
+        rank1 = rank_t(&col);
+        select1 = select_t(&col);
     }
 
     // Access position at bit_vector
@@ -72,21 +72,31 @@ public:
     }
     ulint bits_set()
     {
-        return rank(size());
+        return rank1(size());
     }
 
     // Get idx in the column given run and offset
     ulint get_idx(ulint k, ulint d)
     {
-        return select(k + 1) + d;
+        return select1(k + 1) + d;
+    }
+
+    ulint select(ulint i)
+    {
+        return select1(i);
+    }
+
+    ulint rank(ulint i)
+    {
+        return rank1(i);
     }
 
     // Finds the ith bit before or including this position
     std::pair<ulint, ulint> predecessor(ulint i)
     {
-        assert(rank(i + 1) > 0);
-        ulint rank_pred = rank(i + 1) - 1;
-        return std::make_pair(rank_pred, select(rank_pred + 1));
+        assert(rank1(i + 1) > 0);
+        ulint rank_pred = rank1(i + 1) - 1;
+        return std::make_pair(rank_pred, select1(rank_pred + 1));
     }
 
     bv_t get_bv()
@@ -113,8 +123,8 @@ public:
     void load(std::istream &in)
     {
         col.load(in);
-        rank = rank_t(&col);
-        select = select_t(&col);
+        rank1 = rank_t(&col);
+        select1 = select_t(&col);
     }
 };
 

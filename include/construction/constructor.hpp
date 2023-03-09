@@ -33,7 +33,7 @@
 using namespace std;
 using namespace sdsl;
 
-template  < class bv_t = bit_vector >
+template  < class bv_t = sd_vector<> >
 class constructor
 {
 protected:
@@ -56,15 +56,15 @@ public:
         lengths.seekg(0);
 
         // Mark bits in P and Q to build columns
-        bv_t P_bits = bv_t(table.size(), false);
-        bv_t Q_bits = bv_t(table.size(), false);
+        sd_vector_builder P_bits = sd_vector_builder(table.size(), table.runs());
+        sd_vector_builder Q_bits = sd_vector_builder(table.size(), table.runs());
         
         char c;
         ulint pos = 0; // Current cursor to run head positions
         vector<vector<size_t>> char_runs = vector<vector<size_t>>(ALPHABET_SIZE); // used to build Q
         while ((c = heads.get()) != EOF)
         {
-            P_bits[pos] = true;
+            P_bits.set(pos);
 
             size_t length = 0;
             lengths.read((char *)&length, 5);
@@ -85,13 +85,13 @@ public:
         for (size_t c = 0; c < ALPHABET_SIZE; ++c)
         {
             for (size_t j = 0; j < char_runs[c].size(); ++j) {
-                Q_bits[pos] = true;
+                Q_bits.set(pos);
                 pos += char_runs[c][j];
             }
         }
 
-        P = static_column<bv_t>(P_bits);
-        Q = static_column<bv_t>(Q_bits);
+        P = static_column<bv_t>(bv_t(P_bits));
+        Q = static_column<bv_t>(bv_t(Q_bits));
     }
 
     // For a corresponding position in Q, find and return its position in P

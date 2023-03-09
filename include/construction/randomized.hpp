@@ -37,7 +37,7 @@
 using namespace std;
 using namespace sdsl;
 
-template < class bv_t = bit_vector >
+template < class bv_t = sd_vector<> >
 class randomized : public constructor<bv_t>
 {
 private:
