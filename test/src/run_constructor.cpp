@@ -72,6 +72,10 @@ int main(int argc, char *const argv[])
   verbose("Memory peak: ", malloc_count_peak());
   verbose("Elapsed time (s): ", std::chrono::duration<double, std::ratio<1>>(t_insert_end - t_insert_mid).count());
 
+  #ifdef PRINT_STATS
+  cout << "Time run: " << std::chrono::duration<double, std::ratio<1>>(t_insert_end - t_insert_mid).count() << std::endl;
+  #endif
+
   verbose("Serializing");
 
   t_insert_mid = std::chrono::high_resolution_clock::now();
