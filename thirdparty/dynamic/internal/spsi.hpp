@@ -97,9 +97,9 @@ class spsi_reference {
 };
 
 template <class leaf_type,  // underlying representation of the integers
-          uint32_t B_LEAF,  // number of integers m allowed for a
+          uint64_t B_LEAF,  // number of integers m allowed for a
           // leaf is B_LEAF <= m <= 2*B_LEAF (except at the beginning)
-          uint32_t B  // Order of the tree: number of elements n in each
+          uint64_t B  // Order of the tree: number of elements n in each
                       // internal node
           // is always B <= n <= 2B+1  (except at the beginning)
           // Alan: Actually, B + 1 <= n <= 2B+2  (except at the beginning)
@@ -357,9 +357,9 @@ class spsi {
 
 
 template <class leaf_type,  // underlying representation of the integers
-          uint32_t B_LEAF,  // number of integers m allowed for a
+          uint64_t B_LEAF,  // number of integers m allowed for a
           // leaf is B_LEAF <= m <= 2*B_LEAF (except at the beginning)
-          uint32_t B  // Order of the tree: number of elements n in each
+          uint64_t B  // Order of the tree: number of elements n in each
                       // internal node
           // is always B <= n <= 2B+1  (except at the beginning)
           // Alan: Actually, B + 1 <= n <= 2B+2  (except at the beginning)
@@ -413,7 +413,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
    * create new node given some children (other internal nodes),the parent,
    * and the rank of this node among its siblings
    */
-  node(vector<node*>&& c, node* P = NULL, uint32_t rank = 0) {
+  node(vector<node*>&& c, node* P = NULL, uint64_t rank = 0) {
     this->rank_ = rank;
     this->parent = P;
 
@@ -422,7 +422,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
 
     assert(c.size() <= 2 * B + 2);
 
-    for (uint32_t i = 0; i < c.size(); ++i) {
+    for (uint64_t i = 0; i < c.size(); ++i) {
       si += c[i]->size();
       ps += c[i]->psum();
 
@@ -435,7 +435,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
 
     children = std::move(c);
 
-    uint32_t r = 0;
+    uint64_t r = 0;
     for (auto cc : children) {
       cc->overwrite_rank(r++);
       cc->overwrite_parent(this);
@@ -446,7 +446,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
    * create new node given some children (leaves),the parent, and the rank of
    * this node among its siblings
    */
-  node(vector<leaf_type*>&& c, node* P = NULL, uint32_t rank = 0) {
+  node(vector<leaf_type*>&& c, node* P = NULL, uint64_t rank = 0) {
     this->rank_ = rank;
     this->parent = P;
 
@@ -455,7 +455,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
     uint64_t si = 0;
     uint64_t ps = 0;
 
-    for (uint32_t i = 0; i < c.size(); ++i) {
+    for (uint64_t i = 0; i < c.size(); ++i) {
       si += c[i]->size();
       ps += c[i]->psum();
 
@@ -503,11 +503,11 @@ class spsi<leaf_type, B_LEAF, B>::node {
 
   void free_mem() {
     if (has_leaves()) {
-      for (uint32_t i = 0; i < nr_children; ++i) delete leaves[i];
+      for (uint64_t i = 0; i < nr_children; ++i) delete leaves[i];
 
     } else {
-      for (uint32_t i = 0; i < nr_children; ++i) children[i]->free_mem();
-      for (uint32_t i = 0; i < nr_children; ++i) delete children[i];
+      for (uint64_t i = 0; i < nr_children; ++i) children[i]->free_mem();
+      for (uint64_t i = 0; i < nr_children; ++i) delete children[i];
     }
   }
 
@@ -517,7 +517,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
   uint64_t at(uint64_t i) const {
     assert(i < size());
 
-    uint32_t j = find_child(i);
+    uint64_t j = find_child(i);
 
     // size stored in previous counter
     uint64_t previous_size = (j == 0 ? 0 : subtree_sizes[j - 1]);
@@ -546,7 +546,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
   uint64_t psum(uint64_t i) const {
     assert(i < size());
 
-    uint32_t j = find_child(i);
+    uint64_t j = find_child(i);
 
     // size/psum stored in previous counter
     uint64_t previous_size = (j == 0 ? 0 : subtree_sizes[j - 1]);
@@ -571,7 +571,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
   uint64_t search(uint64_t x) const {
     assert(x <= psum());
 
-    uint32_t j = find_1(x);
+    uint64_t j = find_1(x);
 
     // size/psum stored in previous counter
     uint64_t previous_size = (j == 0 ? 0 : subtree_sizes[j - 1]);
@@ -602,7 +602,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
     assert(x <= size() - psum());
     assert(x > 0);
 
-    uint32_t j = find_0(x);
+    uint64_t j = find_0(x);
 
     // size/psum stored in previous counter
     uint64_t previous_size = (j == 0 ? 0 : subtree_sizes[j - 1]);
@@ -627,7 +627,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
   uint64_t search_r(uint64_t x) const {
     assert(x <= psum() + size());
 
-    uint32_t j = find_r(x);
+    uint64_t j = find_r(x);
 
     // size/psum stored in previous counter
     uint64_t previous_size = (j == 0 ? 0 : subtree_sizes[j - 1]);
@@ -654,7 +654,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
 
     assert(x <= psum());
 
-    uint32_t j = find_1(x);
+    uint64_t j = find_1(x);
 
     if (subtree_psums[j] == x) return true;
 
@@ -679,7 +679,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
 
     assert(x <= psum() + size());
 
-    uint32_t j = find_r(x);
+    uint64_t j = find_r(x);
 
     if (subtree_psums[j] + subtree_sizes[j] == x) return true;
 
@@ -707,7 +707,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
   void increment(uint64_t i, uint64_t delta, bool subtract = false) {
     assert(i < size());
 
-    uint32_t j = find_child(i);
+    uint64_t j = find_child(i);
 
     // size stored in previous counter
     uint64_t previous_size = (j == 0 ? 0 : subtree_sizes[j - 1]);
@@ -732,7 +732,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
     }
 
     // after the increment, modify psum counters
-    for (uint32_t k = j; k < nr_children; ++k) {
+    for (uint64_t k = j; k < nr_children; ++k) {
       // check for under/overflows
       assert(subtract or (subtree_psums[k] <= (~uint64_t(0)) - delta));
       assert((not subtract) or (delta <= subtree_psums[k]));
@@ -839,7 +839,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
       // the min # of children
 
       if (x != x->parent->children[x->rank()]) {
-        uint32_t real_r = 0;
+        uint64_t real_r = 0;
         while (real_r < x->parent->nr_children) {
           if (x->parent->children[real_r] == x) {
             cerr << real_r << ' ' << x->rank() << endl;
@@ -896,7 +896,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
             }
 
             // update ranks of x's children
-            uint32_t r = 0;
+            uint64_t r = 0;
             for (auto cc : x->children) {
               cc->overwrite_rank(r);
               ++r;
@@ -929,7 +929,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
               (y->subtree_psums)[j] = ps;
             }
             // update ranks of y's children
-            uint32_t r = 0;
+            uint64_t r = 0;
             for (auto cc : y->children) {
               cc->overwrite_rank(r);
               ++r;
@@ -1077,7 +1077,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
         x->nr_children = xy->nr_children;
         x->has_leaves_ = xy->has_leaves_;
 
-        uint32_t r = 0;
+        uint64_t r = 0;
         if (not x->has_leaves()) {
           for (auto cc : x->children) {
             cc->overwrite_parent(x);
@@ -1097,7 +1097,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
     assert(this->can_lose());
     assert(i < this->size());
 
-    uint32_t j = this->find_child(i);
+    uint64_t j = this->find_child(i);
 
     // size stored in previous counter
     uint64_t previous_size = (j == 0 ? 0 : subtree_sizes[j - 1]);
@@ -1234,8 +1234,8 @@ class spsi<leaf_type, B_LEAF, B>::node {
       node* tmp_parent = this->parent;
       node* tmp_child = this;
       while (tmp_parent != NULL) {
-        uint32_t r = tmp_child->rank_;
-        uint32_t nc = tmp_parent->nr_children;
+        uint64_t r = tmp_child->rank_;
+        uint64_t nc = tmp_parent->nr_children;
         while (r < nc) {
           --(tmp_parent->subtree_sizes[r]);
 
@@ -1267,9 +1267,9 @@ class spsi<leaf_type, B_LEAF, B>::node {
     return new_root;
   }
 
-  uint32_t rank() const { return rank_; }
+  uint64_t rank() const { return rank_; }
 
-  void overwrite_rank(uint32_t r) { rank_ = r; }
+  void overwrite_rank(uint64_t r) { rank_ = r; }
 
   uint64_t size() const {
     assert(nr_children > 0);
@@ -1281,7 +1281,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
 
   void overwrite_parent(node* P) { parent = P; }
 
-  uint32_t number_of_children() { return nr_children; }
+  uint64_t number_of_children() { return nr_children; }
 
   ulint serialize(ostream& out) const {
     ulint w_bytes = 0;
@@ -1380,7 +1380,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
   /*
    * new element between elements i and i+1
    */
-  void new_children(uint32_t i, node* left, node* right) {
+  void new_children(uint64_t i, node* left, node* right) {
     assert(i < nr_children);
     assert(not is_full());     // this node must not be full!
     assert(not has_leaves());  // this procedure can be called only on nodes
@@ -1391,7 +1391,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
     uint64_t previous_psum = (i == 0 ? 0 : subtree_psums[i - 1]);
 
     // first of all, move forward counters i+1, i+2, ...
-    for (uint32_t j = subtree_sizes.size() - 1; j > i; j--) {
+    for (uint64_t j = subtree_sizes.size() - 1; j > i; j--) {
       // node is not full so overwriting subtree_sizes[subtree_sizes.size()-1]
       // is safe
       subtree_sizes[j] = subtree_sizes[j - 1];
@@ -1409,9 +1409,9 @@ class spsi<leaf_type, B_LEAF, B>::node {
 
     // reset children
     children = vector<node*>(nr_children);
-    uint32_t k = 0;  // index in children
+    uint64_t k = 0;  // index in children
 
-    for (uint32_t j = 0; j < nr_children - 1; ++j) {
+    for (uint64_t j = 0; j < nr_children - 1; ++j) {
       if (i == j) {
         // insert left and right, ignore child i
         assert(k < nr_children);
@@ -1432,13 +1432,13 @@ class spsi<leaf_type, B_LEAF, B>::node {
     // children i and i+1 are new; we have now to increase the rank
     // of children i+2,...
 
-    for (uint32_t j = i + 2; j < nr_children; j++) {
+    for (uint64_t j = i + 2; j < nr_children; j++) {
       children[j]->increment_rank();
       assert(children[j]->rank() < nr_children);
     }
   }
 
-  void new_children(uint32_t i, leaf_type* left, leaf_type* right) {
+  void new_children(uint64_t i, leaf_type* left, leaf_type* right) {
     assert(i < nr_children);
     assert(not is_full());  // this node must not be full!
     assert(has_leaves());
@@ -1463,7 +1463,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
     uint64_t previous_psum = (i == 0 ? 0 : subtree_psums[i - 1]);
 
     // first of all, move forward counters i+1, i+2, ...
-    for (uint32_t j = nr_children; j > i; j--) {
+    for (uint64_t j = nr_children; j > i; j--) {
       // node is not full so overwriting subtree_sizes[subtree_sizes.size()-1]
       // is safe
       subtree_sizes[j] = subtree_sizes[j - 1];
@@ -1481,9 +1481,9 @@ class spsi<leaf_type, B_LEAF, B>::node {
 
     // reset leaves
     leaves = vector<leaf_type*>(nr_children);
-    uint32_t k = 0;  // index in leaves
+    uint64_t k = 0;  // index in leaves
 
-    for (uint32_t j = 0; j < nr_children - 1; ++j) {
+    for (uint64_t j = 0; j < nr_children - 1; ++j) {
       if (i == j) {
         // insert left and right, ignore child i
         assert(k < nr_children);
@@ -1559,7 +1559,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
     assert(not is_full());
     assert(i <= size());
 
-    uint32_t j = nr_children - 1;
+    uint64_t j = nr_children - 1;
 
     // if i==size, then insert in last children
     if (i < size())
@@ -1599,7 +1599,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
     assert(nr_children <= subtree_psums.size());
     assert(nr_children <= subtree_sizes.size());
 
-    for (uint32_t k = j; k < nr_children; ++k) {
+    for (uint64_t k = j; k < nr_children; ++k) {
       if (has_leaves()) {
         assert(leaves[k] != NULL);
         ps += leaves[k]->psum();
@@ -1630,7 +1630,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
 
       ulint k = 0;
 
-      for (uint32_t i = nr_children / 2; i < nr_children; ++i)
+      for (uint64_t i = nr_children / 2; i < nr_children; ++i)
         right_children_l[k++] = leaves[i];
 
       assert(k == right_children_l.size());
@@ -1643,7 +1643,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
 
       ulint k = 0;
 
-      for (uint32_t i = nr_children / 2; i < nr_children; ++i)
+      for (uint64_t i = nr_children / 2; i < nr_children; ++i)
         right_children_n[k++] = children[i];
 
       assert(k == right_children_n.size());
@@ -1714,9 +1714,9 @@ class spsi<leaf_type, B_LEAF, B>::node {
   vector<leaf_type*> leaves;
 
   node* parent = NULL;  // NULL for root
-  uint32_t rank_ = 0;   // rank of this node among its siblings
+  uint64_t rank_ = 0;   // rank of this node among its siblings
 
-  uint32_t nr_children = 0;  // number of subtrees
+  uint64_t nr_children = 0;  // number of subtrees
 
   bool has_leaves_ = false;  // if true, leaves array is nonempty and children is empty
 };
