@@ -112,9 +112,9 @@ private:
 };
    
 template< 	class leaf_type, 	//underlying representation of the integers
-            uint32_t B_LEAF,	//number of integers m allowed for a
+            uint64_t B_LEAF,	//number of integers m allowed for a
             //leaf is B_LEAF <= m <= 2*B_LEAF (except at the beginning)
-            uint32_t B		//Order of the tree: number of elements n in each internal node
+            uint64_t B		//Order of the tree: number of elements n in each internal node
             //is always B <= n <= 2B+1  (except at the beginning)
             //Alan: Actually, B + 1 <= n <= 2B+2  (except at the beginning)
             >
@@ -366,7 +366,7 @@ private:
          * create new node given some children (other internal nodes),the parent, and the rank of this
          * node among its siblings
          */
-        node(vector<node*> &c, node* P=NULL, uint32_t rank=0){
+        node(vector<node*> &c, node* P=NULL, uint64_t rank=0){
 
             this->rank_ = rank;
             this->parent = P;
@@ -377,7 +377,7 @@ private:
 
             assert(c.size()<=2*B+2);
 
-            for(uint32_t i = 0;i<c.size();++i){
+            for(uint64_t i = 0;i<c.size();++i){
 
                 si += c[i]->size();
 
@@ -390,7 +390,7 @@ private:
 
             children = vector<node*>(c);
 
-            uint32_t r = 0;
+            uint64_t r = 0;
             for(auto cc : children){
 
                 cc->overwrite_rank(r++);
@@ -404,7 +404,7 @@ private:
          * create new node given some children (leaves),the parent, and the rank of this
          * node among its siblings
          */
-        node(vector<leaf_type*> &c, node* P=NULL, uint32_t rank=0){
+        node(vector<leaf_type*> &c, node* P=NULL, uint64_t rank=0){
 
             this->rank_ = rank;
             this->parent = P;
@@ -415,7 +415,7 @@ private:
 
             uint64_t si = 0;
 
-            for(uint32_t i = 0;i<c.size();++i){
+            for(uint64_t i = 0;i<c.size();++i){
 
                 si += c[i]->size();
 
@@ -475,12 +475,12 @@ private:
 
             if(has_leaves()){
 
-                for(uint32_t i = 0;i<nr_children;++i) delete leaves[i];
+                for(uint64_t i = 0;i<nr_children;++i) delete leaves[i];
 
             }else{
 
-                for(uint32_t i = 0;i<nr_children;++i) children[i]->free_mem();
-                for(uint32_t i = 0;i<nr_children;++i) delete children[i];
+                for(uint64_t i = 0;i<nr_children;++i) children[i]->free_mem();
+                for(uint64_t i = 0;i<nr_children;++i) delete children[i];
 
             }
 
@@ -493,7 +493,7 @@ private:
 
             assert(i < size());
 
-            uint32_t j = 0;
+            uint64_t j = 0;
 
             while(subtree_sizes[j] <= i){
 
@@ -533,7 +533,7 @@ private:
 
             assert(i < size());
 
-            uint32_t j = 0;
+            uint64_t j = 0;
 
             while(subtree_sizes[j] <= i){
 
@@ -690,7 +690,7 @@ private:
                 //the min # of children
 
                 if (x != x->parent->children[ x->rank() ] ) {
-                    uint32_t real_r = 0;
+                    uint64_t real_r = 0;
                     while (real_r < x->parent->nr_children) {
                         if (x->parent->children[ real_r ] == x) {
                             cerr << real_r << ' ' << x->rank() << endl;
@@ -743,7 +743,7 @@ private:
                             }
 
                             //update ranks of x's children
-                            uint32_t r = 0;
+                            uint64_t r = 0;
                             for (auto cc : x->children) {
                                 cc->overwrite_rank( r );
                                 ++r;
@@ -773,7 +773,7 @@ private:
                                 (y->subtree_sizes)[j] = si;
                             }
                             //update ranks of y's children
-                            uint32_t r = 0;
+                            uint64_t r = 0;
                             for (auto cc : y->children) {
                                 cc->overwrite_rank( r );
                                 ++r;
@@ -903,7 +903,7 @@ private:
                     x->nr_children = xy->nr_children;
                     x->has_leaves_ = xy->has_leaves_;
 
-                    uint32_t r = 0;
+                    uint64_t r = 0;
                     if (not x->has_leaves()) {
                         for ( auto cc : x->children ) {
                             cc->overwrite_parent( x );
@@ -927,7 +927,7 @@ private:
             assert(this->can_lose());
             assert( i < this->size());
 
-            uint32_t j = 0;
+            uint64_t j = 0;
             while(this->subtree_sizes[j] <= i){
 	       
                 ++j;
@@ -1061,8 +1061,8 @@ private:
                 node* tmp_parent = this->parent;
                 node* tmp_child = this;
                 while (tmp_parent != NULL) {
-                    uint32_t r = tmp_child->rank_;
-                    uint32_t nc = tmp_parent->nr_children;
+                    uint64_t r = tmp_child->rank_;
+                    uint64_t nc = tmp_parent->nr_children;
                     while (r < nc) {
                         --(tmp_parent->subtree_sizes[ r ]);
                         ++r;
@@ -1095,9 +1095,9 @@ private:
         }
 
 
-        uint32_t rank(){return rank_;}
+        uint64_t rank(){return rank_;}
 
-        void overwrite_rank(uint32_t r){rank_=r;}
+        void overwrite_rank(uint64_t r){rank_=r;}
 
         uint64_t size() const {
 
@@ -1111,7 +1111,7 @@ private:
             parent = P;
         }
 
-        uint32_t number_of_children(){
+        uint64_t number_of_children(){
             return nr_children;
         }
 
@@ -1208,7 +1208,7 @@ private:
         /*
          * new element between elements i and i+1
          */
-        void new_children(uint32_t i, node* left, node* right){
+        void new_children(uint64_t i, node* left, node* right){
 
             assert(i<nr_children);
             assert(not is_full()); 		//this node must not be full!
@@ -1219,7 +1219,7 @@ private:
             uint64_t previous_size = (i==0?0:subtree_sizes[i-1]);
 
             //first of all, move forward counters i+1, i+2, ...
-            for(uint32_t j=subtree_sizes.size()-1; j>i; j--){
+            for(uint64_t j=subtree_sizes.size()-1; j>i; j--){
 
                 //node is not full so overwriting subtree_sizes[subtree_sizes.size()-1] is safe
                 subtree_sizes[j] = subtree_sizes[j-1];
@@ -1236,9 +1236,9 @@ private:
 
             //reset children
             children = vector<node*>(nr_children);
-            uint32_t k=0;//index in children
+            uint64_t k=0;//index in children
 
-            for(uint32_t j = 0;j < nr_children-1;++j){
+            for(uint64_t j = 0;j < nr_children-1;++j){
 
                 if(i==j){
 
@@ -1264,7 +1264,7 @@ private:
             //children i and i+1 are new; we have now to increase the rank
             //of children i+2,...
 
-            for(uint32_t j = i+2;j<nr_children;j++){
+            for(uint64_t j = i+2;j<nr_children;j++){
 
                 children[j]->increment_rank();
                 assert(children[j]->rank()<nr_children);
@@ -1273,7 +1273,7 @@ private:
 
         }
 
-        void new_children(uint32_t i, leaf_type* left, leaf_type* right){
+        void new_children(uint64_t i, leaf_type* left, leaf_type* right){
 
             assert(i<nr_children);
             assert(not is_full()); //this node must not be full!
@@ -1297,7 +1297,7 @@ private:
             uint64_t previous_size = (i==0?0:subtree_sizes[i-1]);
 
             //first of all, move forward counters i+1, i+2, ...
-            for(uint32_t j=nr_children; j>i; j--){
+            for(uint64_t j=nr_children; j>i; j--){
 
                 //node is not full so overwriting subtree_sizes[subtree_sizes.size()-1] is safe
                 subtree_sizes[j] = subtree_sizes[j-1];
@@ -1314,9 +1314,9 @@ private:
 
             //reset leaves
             leaves = vector<leaf_type*>(nr_children);
-            uint32_t k=0;//index in leaves
+            uint64_t k=0;//index in leaves
 
-            for(uint32_t j = 0;j < nr_children-1 ;++j){
+            for(uint64_t j = 0;j < nr_children-1 ;++j){
                 if(i==j){
 
                     //insert left and right, ignore child i
@@ -1345,7 +1345,7 @@ private:
             assert(not is_full());
             assert(i <= size());
 
-            uint32_t j = nr_children-1;
+            uint64_t j = nr_children-1;
 
             //if i==size, then insert in last children
             if(i<size()){
@@ -1420,7 +1420,7 @@ private:
             assert(has_leaves() or nr_children<=children.size());
             assert(nr_children<=subtree_sizes.size());
 
-            for(uint32_t k=0;k<nr_children;++k){
+            for(uint64_t k=0;k<nr_children;++k){
 
                 if(has_leaves()){
 
@@ -1457,7 +1457,7 @@ private:
 
                 ulint k=0;
 
-                for(uint32_t i = nr_children/2; i<nr_children;++i)
+                for(uint64_t i = nr_children/2; i<nr_children;++i)
                     right_children_l[k++] = leaves[i];
 
                 assert(k==right_children_l.size());
@@ -1471,7 +1471,7 @@ private:
 
                 ulint k=0;
 
-                for(uint32_t i = nr_children/2; i<nr_children;++i)
+                for(uint64_t i = nr_children/2; i<nr_children;++i)
                     right_children_n[k++] = children[i];
 
                 assert(k==right_children_n.size());
@@ -1506,9 +1506,9 @@ private:
         vector<leaf_type*> leaves;
 
         node* parent = NULL; 		//NULL for root
-        uint32_t rank_ = 0; 		//rank of this node among its siblings
+        uint64_t rank_ = 0; 		//rank of this node among its siblings
 
-        uint32_t nr_children=0; 	//number of subtrees
+        uint64_t nr_children=0; 	//number of subtrees
 
         bool has_leaves_=false;	//if true, leaves array is nonempty and children is empty
 
