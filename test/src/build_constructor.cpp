@@ -54,49 +54,53 @@ int main(int argc, char *const argv[])
 
   ifs_heads.seekg(0);
   ifs_len.seekg(0);
-  constructor<bv_t> construct(ifs_heads, ifs_len);
 
-  std::chrono::high_resolution_clock::time_point t_insert_end = std::chrono::high_resolution_clock::now();
+  FL_table fl(ifs_heads, ifs_len);
+  fl.get_run_lcs(args.filename + ".lcs");
 
-  verbose("Construction Complete");
-  verbose("Memory peak: ", malloc_count_peak());
-  verbose("Elapsed time (s): ", std::chrono::duration<double, std::ratio<1>>(t_insert_end - t_insert_start).count());
+  // constructor<bv_t> construct(ifs_heads, ifs_len);
 
-  verbose("Building Deterministic Constructor");
-  std::chrono::high_resolution_clock::time_point t_insert_mid = std::chrono::high_resolution_clock::now();
+  // std::chrono::high_resolution_clock::time_point t_insert_end = std::chrono::high_resolution_clock::now();
 
-  deterministic<bv_t> deter = deterministic(construct);
+  // verbose("Construction Complete");
+  // verbose("Memory peak: ", malloc_count_peak());
+  // verbose("Elapsed time (s): ", std::chrono::duration<double, std::ratio<1>>(t_insert_end - t_insert_start).count());
 
-  t_insert_end = std::chrono::high_resolution_clock::now();
-  verbose("Construction Complete");
-  verbose("Memory peak: ", malloc_count_peak());
-  verbose("Elapsed time (s): ", std::chrono::duration<double, std::ratio<1>>(t_insert_end - t_insert_mid).count());
+  // verbose("Building Deterministic Constructor");
+  // std::chrono::high_resolution_clock::time_point t_insert_mid = std::chrono::high_resolution_clock::now();
+
+  // deterministic<bv_t> deter = deterministic(construct);
+
+  // t_insert_end = std::chrono::high_resolution_clock::now();
+  // verbose("Construction Complete");
+  // verbose("Memory peak: ", malloc_count_peak());
+  // verbose("Elapsed time (s): ", std::chrono::duration<double, std::ratio<1>>(t_insert_end - t_insert_mid).count());
   
-  #ifdef PRINT_STATS
-  sdsl::nullstream ns;
-  cout << "Time build: " << std::chrono::duration<double, std::ratio<1>>(t_insert_end - t_insert_mid).count() << std::endl;
-  cout << "Disk build: " << deter.serialize(ns) << std::endl;
-  #endif
+  // #ifdef PRINT_STATS
+  // sdsl::nullstream ns;
+  // cout << "Time build: " << std::chrono::duration<double, std::ratio<1>>(t_insert_end - t_insert_mid).count() << std::endl;
+  // cout << "Disk build: " << deter.serialize(ns) << std::endl;
+  // #endif
 
-  deter.stats();
+  // deter.stats();
 
-  verbose("Serializing");
-  t_insert_mid = std::chrono::high_resolution_clock::now();
+  // verbose("Serializing");
+  // t_insert_mid = std::chrono::high_resolution_clock::now();
 
-  std::string determ_out = args.filename + deter.get_file_extension();
-  std::ofstream out_d(determ_out);
-  deter.serialize(out_d);
-  out_d.close();
+  // std::string determ_out = args.filename + deter.get_file_extension();
+  // std::ofstream out_d(determ_out);
+  // deter.serialize(out_d);
+  // out_d.close();
 
-  t_insert_end = std::chrono::high_resolution_clock::now();
+  // t_insert_end = std::chrono::high_resolution_clock::now();
 
-  verbose("Serializing Complete");
-  verbose("Memory peak: ", malloc_count_peak());
-  verbose("Elapsed time (s): ", std::chrono::duration<double, std::ratio<1>>(t_insert_end - t_insert_mid).count());
+  // verbose("Serializing Complete");
+  // verbose("Memory peak: ", malloc_count_peak());
+  // verbose("Elapsed time (s): ", std::chrono::duration<double, std::ratio<1>>(t_insert_end - t_insert_mid).count());
 
-  verbose("Done");
-  verbose("Memory peak: ", malloc_count_peak());
-  verbose("Total Elapsed time (s): ", std::chrono::duration<double, std::ratio<1>>(t_insert_end - t_insert_start).count());
+  // verbose("Done");
+  // verbose("Memory peak: ", malloc_count_peak());
+  // verbose("Total Elapsed time (s): ", std::chrono::duration<double, std::ratio<1>>(t_insert_end - t_insert_start).count());
 
   return 0;
 }

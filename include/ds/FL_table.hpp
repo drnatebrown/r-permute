@@ -22,10 +22,13 @@
 #ifndef _FL_TABLE_HH
 #define _FL_TABLE_HH
 
+#include <algorithm>
 #include <common.hpp>
 
 #include <sdsl/structure_tree.hpp>
 #include <sdsl/util.hpp>
+#include <climits>
+#include <vector>
 
 using namespace std;
 
@@ -39,6 +42,7 @@ public:
         ulint length;
         ulint interval;
         ulint offset;
+        ulint L_pos;
 
         size_t serialize(std::ostream &out, sdsl::structure_tree_node *v = nullptr, std::string name ="")
         {
@@ -83,6 +87,7 @@ public:
         vector<ulint> L_lens = vector<ulint>();
         vector<vector<ulint>> L_block_indices = vector<vector<ulint>>(ALPHABET_SIZE);
         vector<vector<ulint>> char_runs = vector<vector<ulint>>(ALPHABET_SIZE); // Vector containing lengths for runs of certain character
+        // vector<vector<ulint>> first_pos = vector<vector<ulint>>(ALPHABET_SIZE); // Vector containing first position in L for each char
         
         //ulint max_len = 0;
 
@@ -145,6 +150,7 @@ public:
 
                 FL_runs[k].interval = F_curr;
                 FL_runs[k].offset = L_seen - F_seen;
+                FL_runs[k].L_pos = L_curr;
                 ++k;
             }
         }
@@ -225,6 +231,42 @@ public:
         verbose("Rate n/r = ", double(n) / r);
         verbose("log2(r) = ", log2(double(r)));
         verbose("log2(n/r) = ", log2(double(n) / r));
+    }
+
+    void get_run_lcs(std::string outfile) {
+        ulint k = 0;
+        ulint d = 0;
+        ulint curr_lcs = 0;
+
+        std::vector<ulint> min_lcs = std::vector<ulint>(r, ULONG_MAX);
+        do {
+            if (d == 0) {
+                curr_lcs = 0;
+                // we define lcs to be 0 for runs of length 1
+                if (FL_runs[k].length == 1) min_lcs[FL_runs[k].L_pos] = curr_lcs;
+            }
+            else {
+                ++curr_lcs;
+                min_lcs[FL_runs[k].L_pos] = std::min(min_lcs[k], curr_lcs);
+            }
+
+            std::pair<ulint, ulint> new_pos = FL(k, d);
+            k = new_pos.first;
+            d = new_pos.second;
+        } while (k != 0 || d != 0);
+
+        FILE *lcs_file;
+        if ((lcs_file = fopen(outfile.c_str(), "w")) == nullptr) {
+            std::cerr << "open() file " << outfile << " failed";
+            return;
+        }
+
+        for (size_t i = 0; i < r; ++i) {
+            size_t lcs_val = min_lcs[i];
+            cout << lcs_val << "\n";
+            if (fwrite(&lcs_val, 5, 1, lcs_file) != 1)
+                std::cerr << "Tunnel write error 1";
+        }
     }
 
     /* serialize to the ostream

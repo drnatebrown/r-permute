@@ -111,9 +111,9 @@ public:
 
     static_bv_t build(ulint d = 2)
     {
-        dynamic_bv_t P_prime = dynamic_bv_t(init_P_prime);
-        dynamic_bv_t Q_prime = dynamic_bv_t(init_Q_prime);
-        index_pq weights = index_pq(init_weights);
+        dynamic_bv_t P_prime = init_P_prime;
+        dynamic_bv_t Q_prime = init_Q_prime;
+        index_pq weights = init_weights;
         //weights.extend(this->table.runs()*(1+ceil(1.0/(d-1))));
 
         ulint count = 0;
@@ -175,9 +175,9 @@ public:
         //verbose("REAL MAX WEIGHT: ", max_w);
 
         static_bv_t ret = static_bv_t(P_prime.size());
-        for (size_t i = 0; i < P_prime.size(); ++i)
+        for (size_t i = 0; i < P_prime.rank(P_prime.size()); ++i)
         {
-            ret[i] = P_prime[i];
+            ret[P_prime.select(i+1)] = true;
         }
 
         return ret;

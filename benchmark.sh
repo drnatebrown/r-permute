@@ -11,7 +11,7 @@ R_PERMUTE_DIR=/home/ext-nbrown/repos/r-permute/
 DATASET_DIR=/home/ext-nbrown/data/chr19
 LOG_DIR=$HOME/log/
 
-datasets=(1 16 32 64 128 256 512 1000)
+datasets=(128)
 split_params=(2 4 8 16 32 64 128 256 512 1024)
 
 rlbwt_prg=$PFP_BULIDDIR/pfp_thresholds
