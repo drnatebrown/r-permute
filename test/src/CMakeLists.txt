@@ -13,3 +13,11 @@ target_include_directories(run_constructor PUBLIC    "../../include/ds"
                                         "../../include/construction" 
                                         )
 target_compile_options(run_constructor PUBLIC "-std=c++17")
+
+add_executable(build_permute build_permute.cpp)
+target_link_libraries(build_permute sdsl malloc_count divsufsort divsufsort64)
+target_include_directories(build_permute PUBLIC    "../../include/ds" 
+                                        "../../include/common"
+                                        "../../include/construction" 
+                                        )
+target_compile_options(build_permute PUBLIC "-std=c++17")
