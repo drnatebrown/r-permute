@@ -63,8 +63,8 @@ Builds LF Table, supporting LF permutations
 
 # Other Tools
 The LF permutation bit_vector can be used to build these other tools in $O(r)$-space and $O(1)$-time for permutation.
-* [r_index_f](https://github.com/drnatebrown/r_index_f)
-* [Movi](https://github.com/mohsenzakeri/Movi))
+* [r_index_f](https://github.com/drnatebrown/r-index-f)
+* [Movi](https://github.com/mohsenzakeri/Movi)
 
 # External Dependencies
 
