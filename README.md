@@ -17,10 +17,6 @@
 
 ---
 
-## Description
-
-TODO
-
 ## How-To
 ### Download and Compile
 
