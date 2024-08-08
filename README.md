@@ -32,7 +32,7 @@ make
 ### Build
 Build constructor once, and then split for various parameters of $d$.
 Guarantees $\leq$ $2d$ operations to compute a permutation from a table
-representation, while inserting at most $\frac{r}{d-1} additional runs.
+representation, while inserting at most $\frac{r}{d-1}$ additional runs.
 
 Output is an SDSL bit_vector at <FASTA>.d_col
 ```console
