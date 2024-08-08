@@ -17,7 +17,23 @@
 
 ---
 
+# Description
+Currently works for the LF mapping of BWT. General permutations are WIP. Input is a FASTA file preprocessed by [pfp-thresholds](https://github.com/maxrossi91/pfp-thresholds).
+
 ## How-To
+### Prereqs
+Run [pfp-thresholds](https://github.com/maxrossi91/pfp-thresholds) in a seperate folder.
+```console
+git clone https://github.com/drnatebrown/pfp-thresholds
+mkdir build
+cd build; cmake ..
+make
+```
+To obtain the RLBWT needed for r-permute run with -r (RLE) and -f (FASTA):
+```console
+python3 pfp_thresholds <FASTA> -r -f
+```
+
 ### Download and Compile
 
 ```console
@@ -42,7 +58,7 @@ Output is an SDSL bit_vector at `<FASTA>.d_col`
 
 # External Dependencies
 
-* [Big-BWT](https://github.com/alshai/Big-BWT.git)
+* [pfp-thresholds](https://github.com/maxrossi91/pfp-thresholds)
     * [gSACA-K](https://github.com/felipelouza/gsa-is.git)
     * [malloc_count](https://github.com/bingmann/malloc_count)
 * [sdsl-lite](https://github.com/simongog/sdsl-lite)
