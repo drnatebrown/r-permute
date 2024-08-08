@@ -55,6 +55,11 @@ Output is an SDSL bit_vector at `<FASTA>.d_col`
 ./test/src/build_constructor <FASTA>
 ./test/src/run_constructor <FASTA> -d <SPLIT_PARAM>
 ```
+### Permute Table
+Builds LF Table, supporting LF permutations
+```console
+./test/src/build_permute <FASTA> -d <SPLIT_PARAM>
+```
 
 # External Dependencies
 
