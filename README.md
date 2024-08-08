@@ -61,6 +61,11 @@ Builds LF Table, supporting LF permutations
 ./test/src/build_permute <FASTA> -d <SPLIT_PARAM>
 ```
 
+# Other Tools
+The LF permutation bit_vector can be used to build these other tools in $O(r)$-space and $O(1)$-time for permutation.
+* [r_index_f](https://github.com/drnatebrown/r_index_f)
+* [Movi](https://github.com/mohsenzakeri/Movi))
+
 # External Dependencies
 
 * [pfp-thresholds](https://github.com/maxrossi91/pfp-thresholds)
