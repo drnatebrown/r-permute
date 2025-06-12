@@ -57,12 +57,12 @@ if(NOT malloc_count_POPULATED)
 endif()
 
 ## Add dynamic
-FetchContent_Declare(
-    dynamic
-    GIT_REPOSITORY https://github.com/xxsds/DYNAMIC
-)
+# FetchContent_Declare(
+#     dynamic
+#     GIT_REPOSITORY https://github.com/xxsds/DYNAMIC
+# )
 
-FetchContent_GetProperties(dynamic)
-if(NOT dynamic_POPULATED)
-    FetchContent_MakeAvailable(dynamic)
-endif()
+# FetchContent_GetProperties(dynamic)
+# if(NOT dynamic_POPULATED)
+#     FetchContent_MakeAvailable(dynamic)
+# endif()
